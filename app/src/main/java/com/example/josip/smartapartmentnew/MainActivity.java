@@ -60,8 +60,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Semaphore;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ClimateFragment.OnFragmentInteractionListener, DoorFragment.OnFragmentInteractionListener{
 
+    public void onFragmentInteraction(Uri uri)
+    {
+        Log.d("DEBUG", "URI: " + uri.toString());
+    }
     /**
      * The {@link PagerAdapter} that will provide
      * fragments for each of the sections. We use a
@@ -70,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
      * may be best to switch to a
      * {@link FragmentStatePagerAdapter}.
      */
+
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
     /**
@@ -104,18 +109,14 @@ public class MainActivity extends AppCompatActivity {
         mDoorIDs = new ArrayList<>();
         mNames = new HashMap<>();
 
-
-
         mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-
-
 
         int requestCode = 0;
         if (mFirebaseUser == null) {
            startActivityForResult(new Intent(this, LoginActivity.class), requestCode);
         }
 
-        // kakvo je stanje s mFirebaseUser ako se startao novi activity
+        // kakvo je stanje s mFirebaseUser ako se startao novi activity?
 
         SharedPreferences prefs = this.getSharedPreferences("PREF_PERSONAL_DATA", Context.MODE_PRIVATE);
 
@@ -200,6 +201,7 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
 
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -245,37 +247,47 @@ public class MainActivity extends AppCompatActivity {
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
+        ArrayList<String> naslovi = new ArrayList<>();
+        ArrayList<String> ids = new ArrayList<>();
+
+
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
+
+            naslovi.add(getResources().getString(R.string.tab_overview_name));
+            ids.add("0");
+            for (String str : mDoorIDs.get(mSelectedApartment)) {
+                naslovi.add(mNames.get(str));
+                ids.add(str);
+            }
+            for (String str : mClimateIDs.get(mSelectedApartment)) {
+                naslovi.add(mNames.get(str));
+                ids.add(str);
+            }
         }
 
         @Override
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
+            String id = ids.get(position);
+            if (id.contains("Climate"))
+                return ClimateFragment.newInstance(id);
+            else if (id.contains("Door"))
+                return DoorFragment.newInstance(id);
+            else
+                return PlaceholderFragment.newInstance(position + 1);
         }
 
         @Override
         public int getCount() {
             // Show 3 total pages.
-
-            return 1 + mClimateIDs.get(mSelectedApartment).size() + mDoorIDs.get(mSelectedApartment).size();
+            return naslovi.size();
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return "Overview";
-                case 1:
-                    return "SECTION B";
-                case 2:
-                    return "SECTION C";
-                case 3:
-                    return "SECTION D";
-            }
-            return null;
+            return naslovi.get(position);
         }
     }
 }

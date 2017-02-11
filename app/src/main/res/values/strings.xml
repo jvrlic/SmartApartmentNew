@@ -21,4 +21,10 @@
     <string name="title_activity_main">Smart apartment</string>
     <string name="action_sign_out">Sign out</string>
     <string name="section_format">Hello World from section: %1$d</string>
+    <string name="tab_overview_name">Overview</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="capital_on">Available</string>
+    <string name="capital_off">Not available</string>
 </resources>
