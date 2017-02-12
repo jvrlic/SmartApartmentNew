@@ -92,8 +92,13 @@ public class MainActivity extends AppCompatActivity implements
     private List<List<String>> mClimateIDs;
     private List<List<String>> mDoorIDs;
     private Map<String,String> mNames;
+    private Map<Long,String> mKeyNames;
 
 
+    public Map<Long,String> getKeyNames()
+    {
+        return mKeyNames;
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -112,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements
         mClimateIDs = new ArrayList<>();
         mDoorIDs = new ArrayList<>();
         mNames = new HashMap<>();
+        mKeyNames = new HashMap<>();
 
         mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -122,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements
 
         DatabaseReference database = FirebaseDatabase.getInstance().getReference();
 
+        // informacija je li aplikacija spojena na Firebase service
         database.child(".info").child("connected").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
@@ -135,6 +142,8 @@ public class MainActivity extends AppCompatActivity implements
             }
             @Override
             public void onCancelled(DatabaseError error) {
+                FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+                fab.setImageResource(R.drawable.disconnected);
             }
         });
 
@@ -166,6 +175,12 @@ public class MainActivity extends AppCompatActivity implements
                 mNames.put(idDoor, prefs.getString(id.concat("_door_name").concat(Integer.toString(j)), "door_".concat(Integer.toString(i * 10 + j))));
             }
             mDoorIDs.add(doorsTemp);
+
+            int nKeys = Integer.parseInt(prefs.getString(id.concat("_key_count") , "0"));
+            for (int j = 1; j <= nKeys; j++) {
+                String idKey = prefs.getString(id.concat("_key_id").concat(Integer.toString(j)), "key_".concat(Integer.toString(i * 10 + j)));
+                mKeyNames.put(Long.parseLong(idKey), prefs.getString(id.concat("_key_name").concat(Integer.toString(j)), "key_".concat(Integer.toString(i * 10 + j))));
+            }
         }
 
         mSelectedApartment = 0;

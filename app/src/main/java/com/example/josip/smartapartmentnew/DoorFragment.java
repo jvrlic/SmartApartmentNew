@@ -2,6 +2,7 @@ package com.example.josip.smartapartmentnew;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -49,6 +50,8 @@ public class DoorFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mDoorID;
 
+    private Map<Long, String> mKeyNames;
+
     private ArrayAdapter<String> listAdapter;
     private ArrayList<String> al;
 
@@ -82,7 +85,7 @@ public class DoorFragment extends Fragment {
                 {
                     // otkljucavanje
                     Date dtUnlocked = new Date(data.get("unlocked"));
-                    String key = data.get("key").toString();
+                    String key = mKeyNames.get(data.get("key"));
                     al.add(0, dateFormat.format(dtUnlocked) + " by " + key);
                 }
                 else if (data.containsKey("opened"))
@@ -163,12 +166,16 @@ public class DoorFragment extends Fragment {
         if (getArguments() != null) {
             mDoorID = getArguments().getString(ARG_PARAM1);
         }
+        mKeyNames = ((MainActivity)getActivity()).getKeyNames();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+
+        final MediaPlayer mp = MediaPlayer.create(this.getActivity(), R.raw.door_lock);
+
         final View view = inflater.inflate(R.layout.fragment_door, container, false);
         ListView listView = (ListView)view.findViewById(R.id.listViewHistory);
 
@@ -180,11 +187,11 @@ public class DoorFragment extends Fragment {
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 if ((long)dataSnapshot.getValue() == 0)
                 {
-                    ((ImageButton) view.findViewById(R.id.imageButton)).setBackgroundResource(R.drawable.unlock);
+                    ((ImageButton) view.findViewById(R.id.imageButton)).setBackgroundResource(R.drawable.unlock_green);
                 }
                 else if ((long)dataSnapshot.getValue() == 1)
                 {
-                    ((ImageButton) view.findViewById(R.id.imageButton)).setBackgroundResource(R.drawable.lock);
+                    ((ImageButton) view.findViewById(R.id.imageButton)).setBackgroundResource(R.drawable.unlock_red);
                 }
             }
 
@@ -192,11 +199,11 @@ public class DoorFragment extends Fragment {
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 if ((long)dataSnapshot.getValue() == 0)
                 {
-                    ((ImageButton) view.findViewById(R.id.imageButton)).setBackgroundResource(R.drawable.unlock);
+                    ((ImageButton) view.findViewById(R.id.imageButton)).setBackgroundResource(R.drawable.unlock_green);
                 }
                 else if ((long)dataSnapshot.getValue() == 1)
                 {
-                    ((ImageButton) view.findViewById(R.id.imageButton)).setBackgroundResource(R.drawable.lock);
+                    ((ImageButton) view.findViewById(R.id.imageButton)).setBackgroundResource(R.drawable.unlock_red);
                 }
             }
 
@@ -237,6 +244,7 @@ public class DoorFragment extends Fragment {
                 value.put("unlocked", Calendar.getInstance().getTime().getTime());
                 value.put("key", (long)FirebaseAuth.getInstance().getCurrentUser().getUid().hashCode());
                 ref.setValue(value);
+                mp.start();
             }
         });
 

@@ -332,6 +332,7 @@ public class LoginActivity extends AppCompatActivity {
 
                                     saveApartmentData(dataSnapshot.getKey().concat("_name"), name);
 
+                                    // podaci o klima uredajima
                                     saveApartmentData(dataSnapshot.getKey().concat("_climate_count"), Long.toString(dataSnapshot.child("Climates").getChildrenCount()));
                                     int i = 1;
                                     for (DataSnapshot ds : dataSnapshot.child("Climates").getChildren()) {
@@ -339,11 +340,20 @@ public class LoginActivity extends AppCompatActivity {
                                         saveApartmentData(dataSnapshot.getKey().concat("_climate_id").concat(Integer.toString(i)), ds.getValue().toString());
                                         i++;
                                     }
+                                    // podaci o vratima
                                     saveApartmentData(dataSnapshot.getKey().concat("_door_count"), Long.toString(dataSnapshot.child("Doors").getChildrenCount()));
                                     i = 1;
                                     for (DataSnapshot ds : dataSnapshot.child("Doors").getChildren()) {
                                         saveApartmentData(dataSnapshot.getKey().concat("_door_name").concat(Integer.toString(i)), ds.getKey());
                                         saveApartmentData(dataSnapshot.getKey().concat("_door_id").concat(Integer.toString(i)), ds.getValue().toString());
+                                        i++;
+                                    }
+                                    // podaci o kljucevima
+                                    saveApartmentData(dataSnapshot.getKey().concat("_key_count"), Long.toString(dataSnapshot.child("Keys").getChildrenCount()));
+                                    i = 1;
+                                    for (DataSnapshot ds : dataSnapshot.child("Keys").getChildren()) {
+                                        saveApartmentData(dataSnapshot.getKey().concat("_key_name").concat(Integer.toString(i)), ds.getValue().toString());
+                                        saveApartmentData(dataSnapshot.getKey().concat("_key_id").concat(Integer.toString(i)), ds.getKey());
                                         i++;
                                     }
 
