@@ -107,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         mApartmentIDs = new ArrayList<String>();
         mClimateIDs = new ArrayList<>();
         mDoorIDs = new ArrayList<>();
@@ -118,6 +119,25 @@ public class MainActivity extends AppCompatActivity implements
         if (mFirebaseUser == null) {
            startActivityForResult(new Intent(this, LoginActivity.class), requestCode);
         }
+
+        DatabaseReference database = FirebaseDatabase.getInstance().getReference();
+
+        database.child(".info").child("connected").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                boolean connected = snapshot.getValue(Boolean.class);
+                FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+                if (connected) {
+                    fab.setImageResource(R.drawable.connected);
+                } else {
+                    fab.setImageResource(R.drawable.disconnected);
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError error) {
+            }
+        });
+
 
         // kakvo je stanje s mFirebaseUser ako se startao novi activity?
 

@@ -15,14 +15,6 @@
         android:paddingTop="@dimen/appbar_padding_top"
         android:theme="@style/AppTheme.AppBarOverlay">
 
-        <TextView
-            android:text="Connected"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/textView3"
-            android:textStyle="normal|italic"
-            android:textAlignment="textEnd" />
-
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -52,9 +44,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@android:drawable/ic_dialog_email"
+        android:src="@drawable/disconnected"
         android:layout_gravity="bottom|end"
         android:clickable="false"
-        app:elevation="8dp" />
+        app:elevation="8dp"
+        app:backgroundTint="?attr/colorButtonNormal" />
 
 </android.support.design.widget.CoordinatorLayout>
