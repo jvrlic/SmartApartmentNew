@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -46,7 +47,7 @@ public class ClimateFragment extends Fragment {
 
     private DatabaseReference mDatabase;
 
-    private Switch mSwitchAva;
+    private ImageView mImageViewAva;
     private TextView mTextViewTemp;
     private TextView mTextViewHum;
 
@@ -91,7 +92,7 @@ public class ClimateFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_climate, container, false);
 
-        mSwitchAva = (Switch)view.findViewById(R.id.switchAva);
+        mImageViewAva = (ImageView)view.findViewById(R.id.imageViewAva1);
         mTextViewTemp = (TextView)view.findViewById(R.id.textViewTemp);
         mTextViewHum = (TextView)view.findViewById(R.id.textViewHum);
 
@@ -113,7 +114,7 @@ public class ClimateFragment extends Fragment {
         mDatabase.child(mClimateID).child("availability").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                mSwitchAva.setChecked(true);
+                mImageViewAva.setImageResource(R.drawable.sensor_connected);
                 if (mTimer != null)
                 {
                     mTimer.purge();
@@ -126,7 +127,7 @@ public class ClimateFragment extends Fragment {
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                mSwitchAva.setChecked(false);
+                                mImageViewAva.setImageResource(R.drawable.sensor_disconnected);
                             }
                         });
 

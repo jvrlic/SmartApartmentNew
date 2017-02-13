@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -22,6 +23,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,6 +33,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 
@@ -43,24 +47,20 @@ import java.util.concurrent.TimeUnit;
  * create an instance of this fragment.
  */
 public class DoorFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
 
-
-    // TODO: Rename and change types of parameters
     private String mDoorID;
 
+    private ImageView mImageViewAva;
+    private Timer mTimer;
     private Map<Long, String> mKeyNames;
+//    private ArrayAdapter<String> listAdapter;
+    private MyListAdapter mListAdapter;
+    private ArrayList<String> mAl;
 
-    private ArrayAdapter<String> listAdapter;
-    private ArrayList<String> al;
+    private SimpleDateFormat mDateFormat;
 
-    private SimpleDateFormat dateFormat;
-
-    private ChildEventListener logEventListener;
-    private ChildEventListener stateEventListener;
-
+    private ChildEventListener mLogEventListener;
 
     private DatabaseReference mDatabase;
 
@@ -73,12 +73,12 @@ public class DoorFragment extends Fragment {
         // Required empty public constructor
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
-        al = new ArrayList<String>();
+        mAl = new ArrayList<String>();
 
-        dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+        mDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 
 
-        logEventListener = new ChildEventListener() {
+        mLogEventListener = new ChildEventListener() {
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 Map<String, Long> data = (Map<String, Long>) dataSnapshot.getValue();
 
@@ -87,7 +87,7 @@ public class DoorFragment extends Fragment {
                     // otkljucavanje
                     Date dtUnlocked = new Date(data.get("unlocked"));
                     String key = mKeyNames.get(data.get("key"));
-                    al.add(0, dateFormat.format(dtUnlocked) + " by " + key);
+                    mAl.add(0, mDateFormat.format(dtUnlocked) + " by " + key);
                 }
                 else if (data.containsKey("opened"))
                 {
@@ -104,9 +104,9 @@ public class DoorFragment extends Fragment {
                         long diffInSec = TimeUnit.MILLISECONDS.toSeconds(dtClosed.getTime() - dtOpened.getTime());
                         duration = " for " + diffInSec + " seconds.";
                     }
-                    al.add(0, dateFormat.format(dtOpened) + duration);
+                    mAl.add(0, mDateFormat.format(dtOpened) + duration);
                 }
-                listAdapter.notifyDataSetChanged();
+                mListAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -120,10 +120,10 @@ public class DoorFragment extends Fragment {
 
                     long diffInSec = TimeUnit.MILLISECONDS.toSeconds(dtClosed.getTime() - dtOpened.getTime());
 
-                    al.remove(0);
-                    al.add(0, dateFormat.format(dtOpened) + " for " + diffInSec + " seconds.");
+                    mAl.remove(0);
+                    mAl.add(0, mDateFormat.format(dtOpened) + " for " + diffInSec + " seconds.");
 
-                    listAdapter.notifyDataSetChanged();
+                    mListAdapter.notifyDataSetChanged();
                 }
             }
 
@@ -145,14 +145,6 @@ public class DoorFragment extends Fragment {
     }
 
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @return A new instance of fragment DoorFragment.
-     */
-    // TODO: Rename and change types and number of parameters
     public static DoorFragment newInstance(String param1) {
         DoorFragment fragment = new DoorFragment();
         Bundle args = new Bundle();
@@ -173,17 +165,21 @@ public class DoorFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
 
         final MediaPlayer mp = MediaPlayer.create(this.getActivity(), R.raw.door_lock);
 
+
         final View view = inflater.inflate(R.layout.fragment_door, container, false);
+
+        mImageViewAva = (ImageView)view.findViewById(R.id.imageViewAva2);
+
         ListView listView = (ListView)view.findViewById(R.id.listViewHistory);
 
-        listAdapter = new ArrayAdapter<String>(this.getActivity(), R.layout.simplerow, al);
+        //listAdapter = new ArrayAdapter<String>(this.getActivity(), R.layout.simplerow, al);
+        MyListAdapter listAdapter = new MyListAdapter(this.getActivity(), R.layout.itemlistrow, mAl);
         listView.setAdapter(listAdapter);
 
-        stateEventListener = new ChildEventListener() {
+        ChildEventListener stateEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 if ((long)dataSnapshot.getValue() == 0)
@@ -224,11 +220,41 @@ public class DoorFragment extends Fragment {
             }
         };
 
+        mDatabase.child(mDoorID).child("availability").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                mImageViewAva.setImageResource(R.drawable.sensor_connected);
+                if (mTimer != null)
+                {
+                    mTimer.purge();
+                    mTimer.cancel();
+                }
+                mTimer = new Timer();
+                mTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mImageViewAva.setImageResource(R.drawable.sensor_disconnected);
+                            }
+                        });
+
+                    }
+                }, 5000L);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
         if (mQuery != null)
-            mQuery.removeEventListener(logEventListener);
-        al.clear();
+            mQuery.removeEventListener(mLogEventListener);
+        mAl.clear();
         mQuery = mDatabase.child(mDoorID).child("Log").limitToLast(10);
-        mQuery.addChildEventListener(logEventListener);
+        mQuery.addChildEventListener(mLogEventListener);
 
         if (mRef != null)
             mRef.removeEventListener(stateEventListener);
