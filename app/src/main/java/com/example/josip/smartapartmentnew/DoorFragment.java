@@ -48,6 +48,7 @@ public class DoorFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
 
     private static final String JOSKAN_DOO="TEST1222";
+    private static final String ANTIFA_DOO="TEST1222";
 
     // TODO: Rename and change types of parameters
     private String mDoorID;
