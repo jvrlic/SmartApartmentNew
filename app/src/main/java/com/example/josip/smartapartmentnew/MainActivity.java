@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresPermission;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -86,7 +87,9 @@ public class MainActivity extends AppCompatActivity implements
     private ViewPager mViewPager;
 
     private FirebaseUser mFirebaseUser;
+    private DatabaseReference mDatabase;
 
+    private boolean mFirstShow;
     private int mSelectedApartment;
     private List<String> mApartmentIDs;
     private List<List<String>> mClimateIDs;
@@ -94,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements
     private Map<String,String> mNames;
     private Map<Long,String> mKeyNames;
 
+    private ValueEventListener connectedListener;
 
     public Map<Long,String> getKeyNames()
     {
@@ -105,6 +109,8 @@ public class MainActivity extends AppCompatActivity implements
         super.onActivityResult(requestCode, resultCode, data);
 
         // do your stuff here after SecondActivity finished.
+        mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
     @Override
@@ -120,19 +126,17 @@ public class MainActivity extends AppCompatActivity implements
         mKeyNames = new HashMap<>();
 
         mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
 
         int requestCode = 0;
         if (mFirebaseUser == null) {
-           startActivityForResult(new Intent(this, LoginActivity.class), requestCode);
+            startActivityForResult(new Intent(this, LoginActivity.class), requestCode);
         }
 
-        DatabaseReference database = FirebaseDatabase.getInstance().getReference();
-
-        // informacija je li aplikacija spojena na Firebase service
-        database.child(".info").child("connected").addValueEventListener(new ValueEventListener() {
+        connectedListener = new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                boolean connected = snapshot.getValue(Boolean.class);
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                boolean connected = dataSnapshot.getValue(Boolean.class);
                 FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
                 if (connected) {
                     fab.setImageResource(R.drawable.connected);
@@ -140,16 +144,121 @@ public class MainActivity extends AppCompatActivity implements
                     fab.setImageResource(R.drawable.disconnected);
                 }
             }
+
             @Override
-            public void onCancelled(DatabaseError error) {
+            public void onCancelled(DatabaseError databaseError) {
                 FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
                 fab.setImageResource(R.drawable.disconnected);
             }
+        };
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        mSelectedApartment = 0;
+        mFirstShow = true;
+
+/*
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
         });
+        */
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+
+        if (mFirebaseUser != null) {
+            // informacija je li aplikacija spojena na Firebase service
+            if (connectedListener != null)
+                mDatabase.child(".info").child("connected").addValueEventListener(connectedListener);
+
+            // ako je dostupan firebase i samo jednom citaj preference i postavi tabove
+            if (mFirstShow == true){
+                ReadPreferences();
+                SetTabs();
+
+                mFirstShow = false;
+            }
+
+            if (mApartmentIDs.size() != 0){
+                setTitle(mNames.get(mApartmentIDs.get(mSelectedApartment)));
+            }
+            else{
+                setTitle("No apartments");
+            }
+        }
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+
+        // TODO: Što ako je mDatabase == null
+        if (connectedListener != null)
+            mDatabase.child(".info").child("connected").removeEventListener(connectedListener);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        for (String str : mApartmentIDs) {
+            menu.add(mNames.get(str));
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if (item.getItemId() == R.id.action_sign_out) {
+            FirebaseAuth.getInstance().signOut();
+            finish();
+            return true;
+        }
+        else {
+            //mSelectedApartment = item.getOrder();
+            //TODO ntreba dovršiti
+            if (item.getTitle().equals("Old town apartment Split 2"))
+                mSelectedApartment = 1;
+            else
+                mSelectedApartment = 0;
+
+            setTitle(mNames.get(mApartmentIDs.get(mSelectedApartment)));
+            mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        }
 
 
-        // kakvo je stanje s mFirebaseUser ako se startao novi activity?
+        return super.onOptionsItemSelected(item);
+    }
 
+
+    private void SetTabs() {
+        // Create the adapter that will return a fragment for each of the three
+        // primary sections of the activity.
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+
+        // Set up the ViewPager with the sections adapter.
+        mViewPager = (ViewPager) findViewById(R.id.container);
+        mViewPager.setAdapter(mSectionsPagerAdapter);
+
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(mViewPager);
+    }
+
+    private void ReadPreferences()
+    {
         SharedPreferences prefs = this.getSharedPreferences("PREF_PERSONAL_DATA", Context.MODE_PRIVATE);
 
         int count = Integer.parseInt(prefs.getString("numberOfApartments", "0"));
@@ -182,68 +291,7 @@ public class MainActivity extends AppCompatActivity implements
                 mKeyNames.put(Long.parseLong(idKey), prefs.getString(id.concat("_key_name").concat(Integer.toString(j)), "key_".concat(Integer.toString(i * 10 + j))));
             }
         }
-
-        mSelectedApartment = 0;
-
-        setTitle(mNames.get(mApartmentIDs.get(0)));
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(mViewPager);
-/*
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-        */
     }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-
-
-        for (String str : mApartmentIDs) {
-            menu.add(mNames.get(str));
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_sign_out) {
-            FirebaseAuth.getInstance().signOut();
-            finish();
-            return true;
-        }
-
-
-        return super.onOptionsItemSelected(item);
-    }
-
 
 
     /**
@@ -294,5 +342,6 @@ public class MainActivity extends AppCompatActivity implements
         public CharSequence getPageTitle(int position) {
             return naslovi.get(position);
         }
-    }
+
+   }
 }

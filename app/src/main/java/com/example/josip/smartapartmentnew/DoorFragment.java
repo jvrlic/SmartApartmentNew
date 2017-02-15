@@ -176,8 +176,8 @@ public class DoorFragment extends Fragment {
         ListView listView = (ListView)view.findViewById(R.id.listViewHistory);
 
         //listAdapter = new ArrayAdapter<String>(this.getActivity(), R.layout.simplerow, al);
-        MyListAdapter listAdapter = new MyListAdapter(this.getActivity(), R.layout.itemlistrow, mAl);
-        listView.setAdapter(listAdapter);
+        mListAdapter = new MyListAdapter(this.getActivity(), R.layout.itemlistrow, mAl);
+        listView.setAdapter(mListAdapter);
 
         ChildEventListener stateEventListener = new ChildEventListener() {
             @Override
