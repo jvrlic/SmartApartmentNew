@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,15 +53,22 @@ public class DoorFragment extends Fragment {
     private String mDoorID;
 
     private ImageView mImageViewAva;
-    private Timer mTimer;
+    private ImageButton mImageButtonUnlock;
+
+    private MediaPlayer mMp;
     private Map<Long, String> mKeyNames;
-//    private ArrayAdapter<String> listAdapter;
+
+    private int mIdSensorAvailable;
+
     private MyListAdapter mListAdapter;
     private ArrayList<String> mAl;
 
     private SimpleDateFormat mDateFormat;
 
     private ChildEventListener mLogEventListener;
+    private ChildEventListener mStateEventListener;
+    private ValueEventListener mAvailableListener;
+
 
     private DatabaseReference mDatabase;
 
@@ -74,9 +82,29 @@ public class DoorFragment extends Fragment {
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
         mAl = new ArrayList<String>();
-
+        mIdSensorAvailable = 0;
         mDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+    }
 
+
+    public static DoorFragment newInstance(String param1) {
+        DoorFragment fragment = new DoorFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, param1);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mDoorID = getArguments().getString(ARG_PARAM1);
+        }
+        mKeyNames = ((MainActivity)getActivity()).getKeyNames();
+        mMp = MediaPlayer.create(getActivity(), R.raw.door_lock);
+
+        mListAdapter = new MyListAdapter(getActivity(), R.layout.itemlistrow, mAl);
 
         mLogEventListener = new ChildEventListener() {
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -142,53 +170,16 @@ public class DoorFragment extends Fragment {
 
             }
         };
-    }
-
-
-    public static DoorFragment newInstance(String param1) {
-        DoorFragment fragment = new DoorFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mDoorID = getArguments().getString(ARG_PARAM1);
-        }
-        mKeyNames = ((MainActivity)getActivity()).getKeyNames();
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
-        final MediaPlayer mp = MediaPlayer.create(this.getActivity(), R.raw.door_lock);
-
-
-        final View view = inflater.inflate(R.layout.fragment_door, container, false);
-
-        mImageViewAva = (ImageView)view.findViewById(R.id.imageViewAva2);
-
-        ListView listView = (ListView)view.findViewById(R.id.listViewHistory);
-
-        //listAdapter = new ArrayAdapter<String>(this.getActivity(), R.layout.simplerow, al);
-        mListAdapter = new MyListAdapter(this.getActivity(), R.layout.itemlistrow, mAl);
-        listView.setAdapter(mListAdapter);
-
-        ChildEventListener stateEventListener = new ChildEventListener() {
+        mStateEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 if ((long)dataSnapshot.getValue() == 0)
                 {
-                    ((ImageButton) view.findViewById(R.id.imageButton)).setBackgroundResource(R.drawable.unlock_green);
+                    mImageButtonUnlock.setBackgroundResource(R.drawable.unlock_green);
                 }
                 else if ((long)dataSnapshot.getValue() == 1)
                 {
-                    ((ImageButton) view.findViewById(R.id.imageButton)).setBackgroundResource(R.drawable.unlock_red);
+                    mImageButtonUnlock.setBackgroundResource(R.drawable.unlock_red);
                 }
             }
 
@@ -196,11 +187,11 @@ public class DoorFragment extends Fragment {
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 if ((long)dataSnapshot.getValue() == 0)
                 {
-                    ((ImageButton) view.findViewById(R.id.imageButton)).setBackgroundResource(R.drawable.unlock_green);
+                    mImageButtonUnlock.setBackgroundResource(R.drawable.unlock_green);
                 }
                 else if ((long)dataSnapshot.getValue() == 1)
                 {
-                    ((ImageButton) view.findViewById(R.id.imageButton)).setBackgroundResource(R.drawable.unlock_red);
+                    mImageButtonUnlock.setBackgroundResource(R.drawable.unlock_red);
                 }
             }
 
@@ -219,47 +210,44 @@ public class DoorFragment extends Fragment {
 
             }
         };
-
-        mDatabase.child(mDoorID).child("availability").addValueEventListener(new ValueEventListener() {
+        mAvailableListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                mImageViewAva.setImageResource(R.drawable.sensor_connected);
-                if (mTimer != null)
-                {
-                    mTimer.purge();
-                    mTimer.cancel();
-                }
-                mTimer = new Timer();
-                mTimer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mImageViewAva.setImageResource(R.drawable.sensor_disconnected);
-                            }
-                        });
+                mIdSensorAvailable = mIdSensorAvailable % 3 + 1;
 
-                    }
-                }, 5000L);
+                switch(mIdSensorAvailable) {
+                    case 1:
+                        mImageViewAva.setImageResource(R.drawable.sensor_available_1);
+                        break;
+                    case 2:
+                        mImageViewAva.setImageResource(R.drawable.sensor_available_2);
+                        break;
+                    case 3:
+                        mImageViewAva.setImageResource(R.drawable.sensor_available_3);
+                        break;
+                }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        };
 
-        if (mQuery != null)
-            mQuery.removeEventListener(mLogEventListener);
-        mAl.clear();
-        mQuery = mDatabase.child(mDoorID).child("Log").limitToLast(10);
-        mQuery.addChildEventListener(mLogEventListener);
+    }
 
-        if (mRef != null)
-            mRef.removeEventListener(stateEventListener);
-        mRef = mDatabase.child(mDoorID).child("Cmd");
-        mRef.addChildEventListener(stateEventListener);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+
+
+        final View view = inflater.inflate(R.layout.fragment_door, container, false);
+
+        mImageViewAva = (ImageView)view.findViewById(R.id.imageViewAva2);
+        mImageButtonUnlock = (ImageButton) view.findViewById(R.id.imageButton);
+
+        ListView listView = (ListView)view.findViewById(R.id.listViewHistory);
+        listView.setAdapter(mListAdapter);
 
         ((ImageButton) view.findViewById(R.id.imageButton)).setOnClickListener( new View.OnClickListener() {
             @Override
@@ -271,11 +259,43 @@ public class DoorFragment extends Fragment {
                 value.put("unlocked", Calendar.getInstance().getTime().getTime());
                 value.put("key", (long)FirebaseAuth.getInstance().getCurrentUser().getUid().hashCode());
                 ref.setValue(value);
-                mp.start();
+                mMp.start();
             }
         });
 
         return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+       mDatabase.child(mDoorID).child("availability").addValueEventListener(mAvailableListener);
+
+
+        if (mQuery != null)
+            mQuery.removeEventListener(mLogEventListener);
+        mAl.clear();
+        mQuery = mDatabase.child(mDoorID).child("Log").limitToLast(10);
+        mQuery.addChildEventListener(mLogEventListener);
+
+        if (mRef != null)
+            mRef.removeEventListener(mStateEventListener);
+        mRef = mDatabase.child(mDoorID).child("Cmd");
+        mRef.addChildEventListener(mStateEventListener);
+
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d("DEBUG", "Stop: " + mDoorID);
+
+        if (mQuery != null)
+            mQuery.removeEventListener(mLogEventListener);
+        if (mRef != null)
+            mRef.removeEventListener(mStateEventListener);
+        mDatabase.child(mDoorID).child("availability").removeEventListener(mAvailableListener);
     }
 
     // TODO: Rename method, update argument and hook method into UI event

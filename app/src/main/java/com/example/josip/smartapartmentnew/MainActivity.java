@@ -70,20 +70,8 @@ public class MainActivity extends AppCompatActivity implements
     {
         Log.d("DEBUG", "URI: " + uri.toString());
     }
-    /**
-     * The {@link PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link FragmentStatePagerAdapter}.
-     */
 
-    private SectionsPagerAdapter mSectionsPagerAdapter;
 
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
     private ViewPager mViewPager;
 
     private FirebaseUser mFirebaseUser;
@@ -133,6 +121,9 @@ public class MainActivity extends AppCompatActivity implements
             startActivityForResult(new Intent(this, LoginActivity.class), requestCode);
         }
 
+        mViewPager = (ViewPager) findViewById(R.id.container);
+        ((TabLayout) findViewById(R.id.tabs)).setupWithViewPager(mViewPager);
+
         connectedListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -171,8 +162,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    protected void onStart()
-    {
+    protected void onStart() {
         super.onStart();
 
         if (mFirebaseUser != null) {
@@ -183,7 +173,8 @@ public class MainActivity extends AppCompatActivity implements
             // ako je dostupan firebase i samo jednom citaj preference i postavi tabove
             if (mFirstShow == true){
                 ReadPreferences();
-                SetTabs();
+
+                mViewPager.setAdapter(new SectionsPagerAdapter(getSupportFragmentManager()));
 
                 mFirstShow = false;
             }
@@ -198,12 +189,11 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    protected void onStop()
-    {
+    protected void onStop() {
         super.onStop();
 
         // TODO: Što ako je mDatabase == null
-        if (connectedListener != null)
+//        if (connectedListener != null)
             mDatabase.child(".info").child("connected").removeEventListener(connectedListener);
     }
 
@@ -229,36 +219,22 @@ public class MainActivity extends AppCompatActivity implements
         }
         else {
             //mSelectedApartment = item.getOrder();
-            //TODO ntreba dovršiti
+            //TODO treba dovršiti
             if (item.getTitle().equals("Old town apartment Split 2"))
                 mSelectedApartment = 1;
             else
                 mSelectedApartment = 0;
 
             setTitle(mNames.get(mApartmentIDs.get(mSelectedApartment)));
-            mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        }
 
+            mViewPager.setAdapter(new SectionsPagerAdapter(getSupportFragmentManager()));
+        }
 
         return super.onOptionsItemSelected(item);
     }
 
 
-    private void SetTabs() {
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(mViewPager);
-    }
-
-    private void ReadPreferences()
-    {
+    private void ReadPreferences() {
         SharedPreferences prefs = this.getSharedPreferences("PREF_PERSONAL_DATA", Context.MODE_PRIVATE);
 
         int count = Integer.parseInt(prefs.getString("numberOfApartments", "0"));
@@ -294,10 +270,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
+
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         ArrayList<String> naslovi = new ArrayList<>();
