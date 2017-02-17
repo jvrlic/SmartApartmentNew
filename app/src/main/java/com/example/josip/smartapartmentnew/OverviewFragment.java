@@ -43,8 +43,9 @@ public class OverviewFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_overview, container, false);
 
         LinearLayout placeHolder = (LinearLayout)view.findViewById(R.id.climate_space);
-        //getLayoutInflater(null).inflate(R.layout.climate_for_overview, placeHolder);
-        //getLayoutInflater(null).inflate(R.layout.climate_for_overview, placeHolder);
+
+        placeHolder.addView(getLayoutInflater(null).inflate(R.layout.climate_for_overview, null));
+        placeHolder.addView(getLayoutInflater(null).inflate(R.layout.climate_for_overview, null));
 
         return view;
     }
