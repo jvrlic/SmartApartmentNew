@@ -61,14 +61,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Semaphore;
 
-public class MainActivity extends AppCompatActivity implements
-        OverviewFragment.OnFragmentInteractionListener{
-
-    public void onFragmentInteraction(Uri uri)
-    {
-        Log.d("DEBUG", "URI: " + uri.toString());
-    }
-
+public class MainActivity extends AppCompatActivity{
 
     private ViewPager mViewPager;
 

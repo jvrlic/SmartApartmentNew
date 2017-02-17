@@ -69,9 +69,6 @@ import static android.provider.AlarmClock.EXTRA_MESSAGE;
  */
 public class LoginActivity extends AppCompatActivity {
 
-    //private Handler mUiHandler = new Handler();
-
-    //defining firebaseauth object
     private FirebaseAuth mFirebaseAuth;
 
     // UI references.
@@ -80,8 +77,6 @@ public class LoginActivity extends AppCompatActivity {
     private CheckBox mAutoLoginView;
     private View mProgressView;
     private View mLoginFormView;
-
-    private boolean mFinished = false;
 
     private String mUserUid;
     private DatabaseReference mDatabase;
@@ -138,11 +133,6 @@ public class LoginActivity extends AppCompatActivity {
 
 
 
-    /**
-     * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
-     * errors are presented and no actual login attempt is made.
-     */
     private void attemptLogin() {
 
         // Reset errors.
@@ -206,23 +196,19 @@ public class LoginActivity extends AppCompatActivity {
                     .addOnCompleteListener(this, new OnCompleteListener<String>() {
                                 @Override
                                 public void onComplete(@NonNull Task<String> task) {
-                                    Log.d("DEBUG", "KRAJ: " + task.getResult());
                                     showProgress(false);
                                     if (task.getResult() == "OK")
                                         finish();
                                 }
                             });
-            Log.d("DEBUG", "DRUGO");
         }
     }
 
     private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
         return email.contains("@");
     }
 
     private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
         return password.length() > 4;
     }
 
@@ -285,26 +271,21 @@ public class LoginActivity extends AppCompatActivity {
             final TaskCompletionSource<String> tcs = new TaskCompletionSource();
 
             if (task.isSuccessful()) {
-                Log.d("DEBUG", mUserUid);
+                Log.d("DEBUG", "HASH: " + mUserUid.hashCode());
 
-                mDatabase.child("users")
-                        .child(mUserUid)
-                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                mDatabase.child("users").child(mUserUid).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                Log.d("DEBUG", "DOHVACAM APARTMANE ID");
                                 saveApartmentData("numberOfApartments", Long.toString(dataSnapshot.getChildrenCount()));
                                 for (DataSnapshot sn : dataSnapshot.getChildren()) {
                                     mApartmentIDs.add(sn.getValue().toString());
                                     saveApartmentData(sn.getKey(), sn.getValue().toString());
                                 }
-                                Log.d("DEBUG", "DOHVATIO APARTMANE ID");
                                 tcs.setResult("OK");
                             }
 
                             @Override
                             public void onCancelled(DatabaseError databaseError) {
-                                Log.d("DEBUG", "GRESKA DOHVACAM APARTMANE ID");
                                 tcs.setResult("KO");
                             }
                         });
@@ -319,15 +300,12 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         public Task<String> then(Task<String> task) {
             final TaskCompletionSource<String> tcs = new TaskCompletionSource();
-            Log.d("DEBUG", "NUMBER OF APARTMENTS: " + mApartmentIDs.size());
 
             if (task.getResult() == "OK") {
                 for (String str : mApartmentIDs) {
-                    mDatabase.child(str)
-                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                    mDatabase.child(str).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
-                                    Log.d("DEBUG", "DOHVACAM DETALJE: ".concat(dataSnapshot.getKey()));
                                     String name = dataSnapshot.child("name").getValue().toString();
 
                                     saveApartmentData(dataSnapshot.getKey().concat("_name"), name);
@@ -358,7 +336,6 @@ public class LoginActivity extends AppCompatActivity {
                                     }
 
                                     if (dataSnapshot.getKey().equalsIgnoreCase(mApartmentIDs.get(mApartmentIDs.size() - 1))) {
-                                        Log.d("DEBUG", "GOTOVO DOHVACANJE DETALJA APARTMANA");
                                         //showProgress(false);
                                         Toast.makeText(LoginActivity.this, "Retreiving data finished", Toast.LENGTH_SHORT).show();
                                         //finish();
@@ -368,7 +345,6 @@ public class LoginActivity extends AppCompatActivity {
 
                                 @Override
                                 public void onCancelled(DatabaseError databaseError) {
-                                    Log.d("DEBUG", "GRESKA DOHVACAM APARTMANE DETALJE");
                                     tcs.setResult("KO");
                                 }
                             });
