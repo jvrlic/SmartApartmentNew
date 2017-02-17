@@ -62,8 +62,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Semaphore;
 
 public class MainActivity extends AppCompatActivity implements
-        ClimateFragment.OnFragmentInteractionListener,
-        DoorFragment.OnFragmentInteractionListener,
         OverviewFragment.OnFragmentInteractionListener{
 
     public void onFragmentInteraction(Uri uri)

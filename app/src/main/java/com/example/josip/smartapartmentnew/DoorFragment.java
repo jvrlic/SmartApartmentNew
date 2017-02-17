@@ -1,18 +1,12 @@
 package com.example.josip.smartapartmentnew;
 
-import android.content.Context;
-import android.graphics.Color;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -29,24 +23,12 @@ import com.google.firebase.database.ValueEventListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link DoorFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link DoorFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class DoorFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
 
@@ -69,10 +51,7 @@ public class DoorFragment extends Fragment {
     private ChildEventListener mStateEventListener;
     private ValueEventListener mAvailableListener;
 
-
     private DatabaseReference mDatabase;
-
-    private OnFragmentInteractionListener mListener;
 
     private Query mQuery;
     private DatabaseReference mRef;
@@ -233,7 +212,6 @@ public class DoorFragment extends Fragment {
 
             }
         };
-
     }
 
     @Override
@@ -289,51 +267,11 @@ public class DoorFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        Log.d("DEBUG", "Stop: " + mDoorID);
 
         if (mQuery != null)
             mQuery.removeEventListener(mLogEventListener);
         if (mRef != null)
             mRef.removeEventListener(mStateEventListener);
         mDatabase.child(mDoorID).child("availability").removeEventListener(mAvailableListener);
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
     }
 }
