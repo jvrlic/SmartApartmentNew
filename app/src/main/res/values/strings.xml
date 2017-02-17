@@ -26,4 +26,11 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="capital_on">Available</string>
     <string name="capital_off">Not available</string>
+
+    <string-array name="spinnerItems">
+        <item>Last day</item>
+        <item>Last week</item>
+        <item>Last month</item>
+        <item>Last year</item>
+    </string-array>
 </resources>

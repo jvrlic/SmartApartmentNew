@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <TextView
+        android:text="0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textViewTempO"
+        android:textSize="30sp"
+        android:layout_marginTop="13dp"
+        android:layout_alignTop="@+id/imageView4"
+        android:layout_toEndOf="@+id/imageView4"
+        android:layout_marginStart="18dp" />
+
+    <TextView
+        android:text="0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textViewHumO"
+        android:textSize="30sp"
+        android:layout_marginTop="14dp"
+        android:layout_alignTop="@+id/imageView5"
+        android:layout_alignStart="@+id/textViewTempO" />
+
+    <TextView
+        android:text="Unknown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textViewNaslov"
+        android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/imageView4" />
+
+    <ImageView
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        app:srcCompat="@drawable/humidity"
+        android:id="@+id/imageView5"
+        android:layout_below="@+id/imageView4"
+        android:layout_alignStart="@+id/imageView4"
+        android:layout_marginTop="10dp" />
+
+    <ImageView
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        app:srcCompat="@drawable/temperature"
+        android:layout_marginStart="22dp"
+        android:id="@+id/imageView4"
+        android:layout_marginTop="16dp"
+        android:layout_below="@+id/textViewNaslov"
+        android:layout_alignParentStart="true" />
+
+</RelativeLayout>
