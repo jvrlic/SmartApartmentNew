@@ -39,7 +39,7 @@ public class MyListAdapter extends ArrayAdapter<String> {
 
         if (p != null) {
             TextView tv = (TextView) v.findViewById(R.id.textViewOpis);
-            ImageView iv = (ImageView) v.findViewById(R.id.imageView);
+            ImageView ivA = (ImageView) v.findViewById(R.id.imageViewAction);
 
 
             if (tv != null) {
@@ -48,11 +48,11 @@ public class MyListAdapter extends ArrayAdapter<String> {
 
             if (p.contains("by"))
             {
-                iv.setImageResource(R.drawable.door_unlock);
+                ivA.setImageResource(R.drawable.door_unlock);
             }
             else
             {
-                iv.setImageResource(R.drawable.door_open);
+                ivA.setImageResource(R.drawable.door_open);
             }
 
         }

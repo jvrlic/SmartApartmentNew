@@ -82,6 +82,10 @@ public class MainActivity extends AppCompatActivity{
     {
         return mKeyNames;
     }
+    public Map<String,String> getNames()
+    {
+        return mNames;
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -292,8 +296,9 @@ public class MainActivity extends AppCompatActivity{
                 return ClimateFragment.newInstance(id);
             else if (id.contains("Door"))
                 return DoorFragment.newInstance(id);
-            else
-                return OverviewFragment.newInstance("test");
+            else {
+                return OverviewFragment.newInstance((String[])mClimateIDs.get(mSelectedApartment).toArray(new String[0]), (String[])mDoorIDs.get(mSelectedApartment).toArray(new String[0]));
+            }
         }
 
         @Override

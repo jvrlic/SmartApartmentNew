@@ -5,17 +5,30 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <ImageView
-        android:layout_width="25dp"
-        android:layout_height="match_parent"
-        app:srcCompat="@drawable/door_unlock"
-        android:id="@+id/imageView" />
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_margin="3dp"
+        android:background="@drawable/krug"
+        android:gravity="center"
+        android:text="1"
+        android:textColor="@android:color/background_light" />
 
     <TextView
         android:text="TextView"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="5dp"
-        android:id="@+id/textViewOpis" />
+        android:id="@+id/textViewOpis"
+        android:layout_gravity="center"
+        android:layout_weight="1"/>
+
+    <ImageView
+        android:id="@+id/imageViewAction"
+        android:layout_width="30dp"
+        android:layout_height="match_parent"
+        android:layout_marginRight="5dp"
+        app:srcCompat="@drawable/door_unlock" />
 
 </LinearLayout>
