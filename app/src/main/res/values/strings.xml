@@ -28,9 +28,8 @@
     <string name="capital_off">Not available</string>
 
     <string-array name="spinnerItems">
-        <item>Last day</item>
-        <item>Last week</item>
-        <item>Last month</item>
-        <item>Last year</item>
+        <item>Last 10 records</item>
+        <item>Last 100 records</item>
+        <item>Last 1000 record</item>
     </string-array>
 </resources>

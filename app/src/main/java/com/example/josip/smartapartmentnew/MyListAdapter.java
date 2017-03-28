@@ -40,10 +40,12 @@ public class MyListAdapter extends ArrayAdapter<String> {
         if (p != null) {
             TextView tv = (TextView) v.findViewById(R.id.textViewOpis);
             ImageView ivA = (ImageView) v.findViewById(R.id.imageViewAction);
+            TextView tvId = (TextView) v.findViewById(R.id.textViewIdent);
 
 
             if (tv != null) {
-                tv.setText(p);
+                tv.setText(p.substring(2));
+                tvId.setText(p.substring(0,1));
             }
 
             if (p.contains("by"))

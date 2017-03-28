@@ -38,6 +38,7 @@ public class DoorFragment extends Fragment {
     private ImageButton mImageButtonUnlock;
 
     private MediaPlayer mMp;
+    private String mIdent;
     private Map<Long, String> mKeyNames;
 
     private int mIdSensorAvailable;
@@ -80,6 +81,10 @@ public class DoorFragment extends Fragment {
         if (getArguments() != null) {
             mDoorID = getArguments().getString(ARG_PARAM1);
         }
+
+        Map <String, String> names = ((MainActivity)getActivity()).getNames();
+        mIdent = names.get(mDoorID).substring(0, 1).toUpperCase();
+
         mKeyNames = ((MainActivity)getActivity()).getKeyNames();
         mMp = MediaPlayer.create(getActivity(), R.raw.door_lock);
 
@@ -94,7 +99,7 @@ public class DoorFragment extends Fragment {
                     // otkljucavanje
                     Date dtUnlocked = new Date(data.get("unlocked"));
                     String key = mKeyNames.get(data.get("key"));
-                    mAl.add(0, mDateFormat.format(dtUnlocked) + " by " + key);
+                    mAl.add(0, mIdent + ":" + mDateFormat.format(dtUnlocked) + " by " + key);
                 }
                 else if (data.containsKey("opened"))
                 {
@@ -111,7 +116,7 @@ public class DoorFragment extends Fragment {
                         long diffInSec = TimeUnit.MILLISECONDS.toSeconds(dtClosed.getTime() - dtOpened.getTime());
                         duration = " for " + diffInSec + " seconds.";
                     }
-                    mAl.add(0, mDateFormat.format(dtOpened) + duration);
+                    mAl.add(0, mIdent + ":" + mDateFormat.format(dtOpened) + duration);
                 }
                 mListAdapter.notifyDataSetChanged();
             }
@@ -128,7 +133,7 @@ public class DoorFragment extends Fragment {
                     long diffInSec = TimeUnit.MILLISECONDS.toSeconds(dtClosed.getTime() - dtOpened.getTime());
 
                     mAl.remove(0);
-                    mAl.add(0, mDateFormat.format(dtOpened) + " for " + diffInSec + " seconds.");
+                    mAl.add(0, mIdent + ":" + mDateFormat.format(dtOpened) + " for " + diffInSec + " seconds.");
 
                     mListAdapter.notifyDataSetChanged();
                 }

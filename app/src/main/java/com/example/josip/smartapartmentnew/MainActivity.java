@@ -101,6 +101,10 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        View decorView = getWindow().getDecorView();
+        int uiOptinos = View.SYSTEM_UI_FLAG_FULLSCREEN;
+        decorView.setSystemUiVisibility(uiOptinos);
+
 
         mApartmentIDs = new ArrayList<String>();
         mClimateIDs = new ArrayList<>();

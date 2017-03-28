@@ -4,11 +4,14 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.util.SortedList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.firebase.database.ChildEventListener;
@@ -19,8 +22,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,7 +45,7 @@ public class OverviewFragment extends Fragment {
     private Map<String,String> mNames;
     private Map<Long,String> mKeyNames;
 
-    private ArrayList<String> mAl;
+    private List<String> mAl;
     private SimpleDateFormat mDateFormat;
 
     private DatabaseReference mDatabase;
@@ -46,6 +54,7 @@ public class OverviewFragment extends Fragment {
     private ChildEventListener mLogEventListener;
 
     private Query mQuery;
+    private int lastCount = 10;
 
     private TextView [] mTextViewClimatesTemp;
     private TextView [] mTextViewClimatesHum;
@@ -55,6 +64,7 @@ public class OverviewFragment extends Fragment {
     public OverviewFragment() {
         // Required empty public constructor
         mDatabase = FirebaseDatabase.getInstance().getReference();
+        //mAl = new SortedList<String>(String.class, new Comparator());
         mAl = new ArrayList<String>();
         mDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     }
@@ -87,13 +97,14 @@ public class OverviewFragment extends Fragment {
         mLogEventListener = new ChildEventListener() {
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 Map<String, Long> data = (Map<String, Long>) dataSnapshot.getValue();
+                String ident = mNames.get(dataSnapshot.getRef().getParent().getParent().getKey()).substring(0, 1).toUpperCase();
 
                 if (data.containsKey("unlocked"))
                 {
                     // otkljucavanje
                     Date dtUnlocked = new Date(data.get("unlocked"));
                     String key = mKeyNames.get(data.get("key"));
-                    mAl.add(0, mDateFormat.format(dtUnlocked) + " by " + key);
+                    mAl.add(0, ident + ":" + mDateFormat.format(dtUnlocked) + " by " + key);
                 }
                 else if (data.containsKey("opened"))
                 {
@@ -110,14 +121,30 @@ public class OverviewFragment extends Fragment {
                         long diffInSec = TimeUnit.MILLISECONDS.toSeconds(dtClosed.getTime() - dtOpened.getTime());
                         duration = " for " + diffInSec + " seconds.";
                     }
-                    mAl.add(0, mDateFormat.format(dtOpened) + duration);
+                    mAl.add(0, ident + ":" + mDateFormat.format(dtOpened) + duration);
                 }
+
+                // sortiraj listu
+                Collections.sort(mAl, new java.util.Comparator<String>() {
+                    @Override
+                    public int compare(String s, String t1) {
+                        try {
+                            return mDateFormat.parse(t1.substring(2, 21)).compareTo(mDateFormat.parse(s.substring(2, 21)));
+                        }
+                        catch(ParseException e)
+                        {
+                            return 0;
+                        }
+                    }
+                });
                 mListAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 Map<String, Long> data = (Map<String, Long>) dataSnapshot.getValue();
+
+                String ident = mNames.get(dataSnapshot.getRef().getParent().getKey()).substring(0, 1).toUpperCase();
 
                 if (data.containsKey("opened")) {
                     // otvaranje se moze samo promijeniti
@@ -127,7 +154,7 @@ public class OverviewFragment extends Fragment {
                     long diffInSec = TimeUnit.MILLISECONDS.toSeconds(dtClosed.getTime() - dtOpened.getTime());
 
                     mAl.remove(0);
-                    mAl.add(0, mDateFormat.format(dtOpened) + " for " + diffInSec + " seconds.");
+                    mAl.add(0, ident + ":" + mDateFormat.format(dtOpened) + " for " + diffInSec + " seconds.");
 
                     mListAdapter.notifyDataSetChanged();
                 }
@@ -192,6 +219,33 @@ public class OverviewFragment extends Fragment {
         ListView listView = (ListView)view.findViewById(R.id.listViewDogadaja);
         listView.setAdapter(mListAdapter);
 
+        Spinner spinner = (Spinner)view.findViewById(R.id.spinner);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                switch (i)
+                {
+                    case 0: lastCount = 10; break;
+                    case 1: lastCount = 100; break;
+                    case 2: lastCount = 1000; break;
+                }
+
+                for (String s: mDoorIDs)
+                    mDatabase.child(s).child("Log").removeEventListener(mLogEventListener);
+
+                mAl.clear();
+                for (String s: mDoorIDs) {
+                    mQuery = mDatabase.child(s).child("Log").limitToLast(lastCount);
+                    mQuery.addChildEventListener(mLogEventListener);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
         return view;
     }
 
@@ -204,7 +258,7 @@ public class OverviewFragment extends Fragment {
 
         mAl.clear();
         for (String s: mDoorIDs) {
-            mQuery = mDatabase.child(s).child("Log").limitToLast(10);
+            mQuery = mDatabase.child(s).child("Log").limitToLast(lastCount);
             mQuery.addChildEventListener(mLogEventListener);
         }
     }
@@ -215,8 +269,8 @@ public class OverviewFragment extends Fragment {
         for (String s: mClimateIDs)
             mDatabase.child(s).child("Data").removeEventListener(mDataEventListener);
 
-        if (mQuery != null)
-            mQuery.removeEventListener(mLogEventListener);
+        for (String s: mDoorIDs)
+            mDatabase.child(s).child("Log").removeEventListener(mLogEventListener);
     }
 
 }
