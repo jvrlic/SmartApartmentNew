@@ -2,7 +2,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="false"
     tools:context="com.example.josip.smartapartmentnew.OverviewFragment">
 
     <RelativeLayout
@@ -36,6 +35,7 @@
             android:layout_below="@+id/spinner"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
+            android:layout_marginBottom="?attr/actionBarSize"
             android:layout_alignParentBottom="true" />
 
     </RelativeLayout>
