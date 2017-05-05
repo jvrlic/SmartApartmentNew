@@ -3,7 +3,6 @@ package com.example.josip.smartapartmentnew;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -114,7 +113,10 @@ public class DoorFragment extends Fragment {
                         duration = " and still open.";
                     else {
                         long diffInSec = TimeUnit.MILLISECONDS.toSeconds(dtClosed.getTime() - dtOpened.getTime());
-                        duration = " for " + diffInSec + " seconds.";
+                        if (diffInSec <= 60)
+                            duration = " for " + diffInSec + " seconds.";
+                        else
+                            duration = " for " + (int)(diffInSec / 60) + " minutes.";
                     }
                     mAl.add(0, mIdent + ":" + mDateFormat.format(dtOpened) + duration);
                 }
@@ -133,7 +135,11 @@ public class DoorFragment extends Fragment {
                     long diffInSec = TimeUnit.MILLISECONDS.toSeconds(dtClosed.getTime() - dtOpened.getTime());
 
                     mAl.remove(0);
-                    mAl.add(0, mIdent + ":" + mDateFormat.format(dtOpened) + " for " + diffInSec + " seconds.");
+                    if (diffInSec <= 60)
+                        mAl.add(0, mIdent + ":" + mDateFormat.format(dtOpened) + " for " + diffInSec + " seconds.");
+                    else
+                        mAl.add(0, mIdent + ":" + mDateFormat.format(dtOpened) + " for " + (int)(diffInSec / 60) + " minutes.");
+
 
                     mListAdapter.notifyDataSetChanged();
                 }
@@ -163,7 +169,7 @@ public class DoorFragment extends Fragment {
                 }
                 else if ((long)dataSnapshot.getValue() == 1)
                 {
-                    mImageButtonUnlock.setBackgroundResource(R.drawable.unlock_red);
+                    mImageButtonUnlock.setBackgroundResource(R.drawable.unlock_gray);
                 }
             }
 
@@ -175,7 +181,7 @@ public class DoorFragment extends Fragment {
                 }
                 else if ((long)dataSnapshot.getValue() == 1)
                 {
-                    mImageButtonUnlock.setBackgroundResource(R.drawable.unlock_red);
+                    mImageButtonUnlock.setBackgroundResource(R.drawable.unlock_gray);
                 }
             }
 

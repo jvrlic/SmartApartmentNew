@@ -1,10 +1,7 @@
 package com.example.josip.smartapartmentnew;
 
-import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.util.SortedList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,13 +22,9 @@ import com.google.firebase.database.ValueEventListener;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.SortedSet;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -119,7 +112,10 @@ public class OverviewFragment extends Fragment {
                         duration = " and still open.";
                     else {
                         long diffInSec = TimeUnit.MILLISECONDS.toSeconds(dtClosed.getTime() - dtOpened.getTime());
-                        duration = " for " + diffInSec + " seconds.";
+                        if (diffInSec <= 60)
+                            duration = " for " + diffInSec + " seconds.";
+                        else
+                            duration = " for " + (int)(diffInSec / 60) + " minutes.";
                     }
                     mAl.add(0, ident + ":" + mDateFormat.format(dtOpened) + duration);
                 }
@@ -154,7 +150,11 @@ public class OverviewFragment extends Fragment {
                     long diffInSec = TimeUnit.MILLISECONDS.toSeconds(dtClosed.getTime() - dtOpened.getTime());
 
                     mAl.remove(0);
-                    mAl.add(0, ident + ":" + mDateFormat.format(dtOpened) + " for " + diffInSec + " seconds.");
+                    if (diffInSec <= 60)
+                        mAl.add(0, ident + ":" + mDateFormat.format(dtOpened) + " for " + diffInSec + " seconds.");
+                    else
+                        mAl.add(0, ident + ":" + mDateFormat.format(dtOpened) + " for " + (int)(diffInSec / 60) + " minutes.");
+
 
                     mListAdapter.notifyDataSetChanged();
                 }
@@ -183,8 +183,8 @@ public class OverviewFragment extends Fragment {
                 {
                     if (dataSnapshot.getRef().getParent().getKey().equals(mClimateIDs[i]))
                     {
-                        mTextViewClimatesTemp[i].setText(dataSnapshot.child("temperature").getValue().toString());
-                        mTextViewClimatesHum[i].setText(dataSnapshot.child("humidity").getValue().toString());
+                        mTextViewClimatesTemp[i].setText(dataSnapshot.child("temperature").getValue(Integer.class).toString());
+                        mTextViewClimatesHum[i].setText(dataSnapshot.child("humidity").getValue(Integer.class).toString());
                     }
                 }
             }

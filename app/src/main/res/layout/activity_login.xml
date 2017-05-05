@@ -66,7 +66,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="@string/auto_login"/>
+                android:text="@string/auto_login"
+                android:visibility="invisible" />
 
             <Button
                 android:id="@+id/email_sign_in_button"

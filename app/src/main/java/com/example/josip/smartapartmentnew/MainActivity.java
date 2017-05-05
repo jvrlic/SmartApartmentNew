@@ -1,18 +1,10 @@
 package com.example.josip.smartapartmentnew;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresPermission;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -22,26 +14,10 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -50,18 +26,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Semaphore;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -205,7 +174,7 @@ public class MainActivity extends AppCompatActivity{
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
         for (String str : mApartmentIDs) {
-            menu.add(mNames.get(str));
+            menu.add(0, mApartmentIDs.indexOf(str), 0, mNames.get(str));
         }
 
         return true;
@@ -220,16 +189,15 @@ public class MainActivity extends AppCompatActivity{
             return true;
         }
         else {
-            //mSelectedApartment = item.getOrder();
-            //TODO treba dovršiti
-            if (item.getTitle().equals("Old town apartment Split 2"))
-                mSelectedApartment = 1;
-            else
-                mSelectedApartment = 0;
+            mSelectedApartment = item.getItemId();
 
             setTitle(mNames.get(mApartmentIDs.get(mSelectedApartment)));
 
-            mViewPager.setAdapter(new SectionsPagerAdapter(getSupportFragmentManager()));
+            //mViewPager.setAdapter(new SectionsPagerAdapter(getSupportFragmentManager()));
+
+            ((SectionsPagerAdapter)mViewPager.getAdapter()).setPages();
+            ((SectionsPagerAdapter)mViewPager.getAdapter()).notifyChangeInPosition(3);
+            mViewPager.getAdapter().notifyDataSetChanged();
         }
 
         return super.onOptionsItemSelected(item);
@@ -275,12 +243,21 @@ public class MainActivity extends AppCompatActivity{
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-        ArrayList<String> naslovi = new ArrayList<>();
-        ArrayList<String> ids = new ArrayList<>();
+        private ArrayList<String> naslovi = new ArrayList<>();
+        private ArrayList<String> ids = new ArrayList<>();
 
+        private long mBaseId = 0;
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
+
+            setPages();
+        }
+
+        public void setPages()
+        {
+            naslovi.clear();
+            ids.clear();
 
             naslovi.add(getResources().getString(R.string.tab_overview_name));
             ids.add("0");
@@ -319,5 +296,22 @@ public class MainActivity extends AppCompatActivity{
             return naslovi.get(position);
         }
 
-   }
+
+        @Override
+        public int getItemPosition(Object object) {
+            // refresh all fragments when data set changed
+            return PagerAdapter.POSITION_NONE;
+        }
+        @Override
+        public long getItemId(int position) {
+            // give an ID different from position when position has been changed
+            return mBaseId + position;
+        }
+
+        public void notifyChangeInPosition(int n) {
+            // shift the ID returned by getItemId outside the range of all previous fragments
+            mBaseId += getCount() + n;
+        }
+
+    }
 }
