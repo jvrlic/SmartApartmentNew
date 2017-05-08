@@ -260,6 +260,7 @@ public class OverviewFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
+        mAlDataRef.clear();
         for (DatabaseReference ref: mAlDataRef) {
             if (ref != null)
                 ref.removeEventListener(mDataEventListener);
@@ -272,6 +273,7 @@ public class OverviewFragment extends Fragment {
         }
 
         mAl.clear();
+        mAlLogRef.clear();
         for (Query ref: mAlLogRef) {
             if (ref != null)
                 ref.removeEventListener(mLogEventListener);
