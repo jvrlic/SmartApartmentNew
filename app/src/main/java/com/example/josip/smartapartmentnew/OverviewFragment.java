@@ -54,11 +54,18 @@ public class OverviewFragment extends Fragment {
 
     private MyListAdapter mListAdapter;
 
+    private ArrayList<DatabaseReference> mAlDataRef;
+    private ArrayList<Query> mAlLogRef;
+
     public OverviewFragment() {
         // Required empty public constructor
         mDatabase = FirebaseDatabase.getInstance().getReference();
         //mAl = new SortedList<String>(String.class, new Comparator());
         mAl = new ArrayList<String>();
+
+        mAlDataRef = new ArrayList<>();
+        mAlLogRef = new ArrayList<>();
+
         mDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     }
 
@@ -252,25 +259,44 @@ public class OverviewFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+
+        for (DatabaseReference ref: mAlDataRef) {
+            if (ref != null)
+                ref.removeEventListener(mDataEventListener);
+        }
         for (String s: mClimateIDs) {
-            mDatabase.child(s).child("Data").addValueEventListener(mDataEventListener);
+            mAlDataRef.add(mDatabase.child(s).child("Data"));
+        }
+        for (DatabaseReference ref: mAlDataRef) {
+            ref.addValueEventListener(mDataEventListener);
         }
 
         mAl.clear();
+        for (Query ref: mAlLogRef) {
+            if (ref != null)
+                ref.removeEventListener(mLogEventListener);
+        }
         for (String s: mDoorIDs) {
-            mQuery = mDatabase.child(s).child("Log").limitToLast(lastCount);
-            mQuery.addChildEventListener(mLogEventListener);
+            mAlLogRef.add(mDatabase.child(s).child("Log").limitToLast(lastCount));
+        }
+        for (Query ref: mAlLogRef) {
+            ref.addChildEventListener(mLogEventListener);
         }
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        for (String s: mClimateIDs)
-            mDatabase.child(s).child("Data").removeEventListener(mDataEventListener);
 
-        for (String s: mDoorIDs)
-            mDatabase.child(s).child("Log").removeEventListener(mLogEventListener);
+        for (DatabaseReference ref: mAlDataRef) {
+            if (ref != null)
+                ref.removeEventListener(mDataEventListener);
+        }
+
+        for (Query ref: mAlLogRef) {
+            if (ref != null)
+                ref.removeEventListener(mLogEventListener);
+        }
     }
 
 }

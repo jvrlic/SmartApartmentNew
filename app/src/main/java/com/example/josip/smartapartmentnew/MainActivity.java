@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity{
 
     private FirebaseUser mFirebaseUser;
     private DatabaseReference mDatabase;
+    private DatabaseReference mConRef;
 
     private boolean mFirstShow;
     private int mSelectedApartment;
@@ -138,8 +139,12 @@ public class MainActivity extends AppCompatActivity{
 
         if (mFirebaseUser != null) {
             // informacija je li aplikacija spojena na Firebase service
-            if (connectedListener != null)
-                mDatabase.child(".info").child("connected").addValueEventListener(connectedListener);
+            if (connectedListener != null) {
+                if (mConRef != null)
+                    mConRef.removeEventListener(connectedListener);
+                mConRef = mDatabase.child(".info").child("connected");
+                mConRef.addValueEventListener(connectedListener);
+            }
 
             // ako je dostupan firebase i samo jednom citaj preference i postavi tabove
             if (mFirstShow == true){
@@ -163,9 +168,8 @@ public class MainActivity extends AppCompatActivity{
     protected void onStop() {
         super.onStop();
 
-        // TODO: Što ako je mDatabase == null
-//        if (connectedListener != null)
-            mDatabase.child(".info").child("connected").removeEventListener(connectedListener);
+        if (mConRef != null)
+            mConRef.removeEventListener(connectedListener);
     }
 
     @Override

@@ -54,7 +54,8 @@ public class DoorFragment extends Fragment {
     private DatabaseReference mDatabase;
 
     private Query mQuery;
-    private DatabaseReference mRef;
+    private DatabaseReference mStateRef;
+    private DatabaseReference mAvaRef;
 
     public DoorFragment() {
         // Required empty public constructor
@@ -259,8 +260,10 @@ public class DoorFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-       mDatabase.child(mDoorID).child("availability").addValueEventListener(mAvailableListener);
-
+        if (mAvaRef != null)
+            mAvaRef.removeEventListener(mAvailableListener);
+        mAvaRef = mDatabase.child(mDoorID).child("availability");
+        mAvaRef.addValueEventListener(mAvailableListener);
 
         if (mQuery != null)
             mQuery.removeEventListener(mLogEventListener);
@@ -268,10 +271,10 @@ public class DoorFragment extends Fragment {
         mQuery = mDatabase.child(mDoorID).child("Log").limitToLast(10);
         mQuery.addChildEventListener(mLogEventListener);
 
-        if (mRef != null)
-            mRef.removeEventListener(mStateEventListener);
-        mRef = mDatabase.child(mDoorID).child("Cmd");
-        mRef.addChildEventListener(mStateEventListener);
+        if (mStateRef != null)
+            mStateRef.removeEventListener(mStateEventListener);
+        mStateRef = mDatabase.child(mDoorID).child("Cmd");
+        mStateRef.addChildEventListener(mStateEventListener);
 
     }
 
@@ -281,8 +284,9 @@ public class DoorFragment extends Fragment {
 
         if (mQuery != null)
             mQuery.removeEventListener(mLogEventListener);
-        if (mRef != null)
-            mRef.removeEventListener(mStateEventListener);
-        mDatabase.child(mDoorID).child("availability").removeEventListener(mAvailableListener);
+        if (mAvaRef != null)
+            mAvaRef.removeEventListener(mAvailableListener);
+        if (mStateRef != null)
+            mStateRef.removeEventListener(mStateEventListener);
     }
 }

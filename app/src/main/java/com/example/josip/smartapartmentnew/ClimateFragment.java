@@ -22,8 +22,11 @@ public class ClimateFragment extends Fragment {
 
     private String mClimateID;
 
-
     private DatabaseReference mDatabase;
+
+    private DatabaseReference mAvaRef;
+    private DatabaseReference mCmdRef;
+    private DatabaseReference mDataRef;
 
     private ImageView mImageViewAva;
     private TextView mTextViewTemp;
@@ -153,17 +156,32 @@ public class ClimateFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        mDatabase.child(mClimateID).child("availability").addValueEventListener(mAvailableListener);
-        mDatabase.child(mClimateID).child("Cmd").child("cmdTurn").addValueEventListener(mCmdEventListener);
-        mDatabase.child(mClimateID).child("Data").addValueEventListener(mDataEventListener);
+        if (mAvaRef != null)
+            mAvaRef.removeEventListener(mAvailableListener);
+        mAvaRef =  mDatabase.child(mClimateID).child("availability");
+        mAvaRef.addValueEventListener(mAvailableListener);
+
+        if (mCmdRef != null)
+            mCmdRef.removeEventListener(mCmdEventListener);
+        mCmdRef =  mDatabase.child(mClimateID).child("Cmd").child("cmdTurn");
+        mCmdRef.addValueEventListener(mCmdEventListener);
+
+        if (mDataRef != null)
+            mDataRef.removeEventListener(mDataEventListener);
+        mDataRef =  mDatabase.child(mClimateID).child("Data");
+        mDataRef.addValueEventListener(mDataEventListener);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        mDatabase.child(mClimateID).child("availability").removeEventListener(mAvailableListener);
-        mDatabase.child(mClimateID).child("Cmd").removeEventListener(mCmdEventListener);
-        mDatabase.child(mClimateID).child("Data").removeEventListener(mDataEventListener);
+
+        if (mAvaRef != null)
+            mAvaRef.removeEventListener(mAvailableListener);
+        if (mCmdRef != null)
+            mCmdRef.removeEventListener(mCmdEventListener);
+        if (mDataRef != null)
+            mDataRef.removeEventListener(mDataEventListener);
     }
 
 }
