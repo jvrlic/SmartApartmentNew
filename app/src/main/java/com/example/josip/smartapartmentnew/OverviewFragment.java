@@ -147,7 +147,7 @@ public class OverviewFragment extends Fragment {
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 Map<String, Long> data = (Map<String, Long>) dataSnapshot.getValue();
 
-                String ident = mNames.get(dataSnapshot.getRef().getParent().getKey()).substring(0, 1).toUpperCase();
+                String ident = mNames.get(dataSnapshot.getRef().getParent().getParent().getKey()).substring(0, 1).toUpperCase();
 
                 if (data.containsKey("opened")) {
                     // otvaranje se moze samo promijeniti
