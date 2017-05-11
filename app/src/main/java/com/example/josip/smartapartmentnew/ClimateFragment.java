@@ -90,8 +90,10 @@ public class ClimateFragment extends Fragment {
         mDataEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                mTextViewTemp.setText(dataSnapshot.child("temperature").getValue(Integer.class).toString());
-                mTextViewHum.setText(dataSnapshot.child("humidity").getValue(Integer.class).toString());
+                int hum_offset = dataSnapshot.child("humidity_offset").getValue(Integer.class);
+                int temp_offset = dataSnapshot.child("temperature_offset").getValue(Integer.class);
+                mTextViewTemp.setText(String.valueOf(dataSnapshot.child("temperature").getValue(Integer.class) - temp_offset));
+                mTextViewHum.setText(String.valueOf(dataSnapshot.child("humidity").getValue(Integer.class) - hum_offset));
             }
 
             @Override

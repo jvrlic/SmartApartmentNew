@@ -190,8 +190,13 @@ public class OverviewFragment extends Fragment {
                 {
                     if (dataSnapshot.getRef().getParent().getKey().equals(mClimateIDs[i]))
                     {
-                        mTextViewClimatesTemp[i].setText(dataSnapshot.child("temperature").getValue(Integer.class).toString());
-                        mTextViewClimatesHum[i].setText(dataSnapshot.child("humidity").getValue(Integer.class).toString());
+                        int hum_offset = dataSnapshot.child("humidity_offset").getValue(Integer.class);
+                        int temp_offset = dataSnapshot.child("temperature_offset").getValue(Integer.class);
+                        mTextViewClimatesTemp[i].setText(String.valueOf(dataSnapshot.child("temperature").getValue(Integer.class) - temp_offset));
+                        mTextViewClimatesHum[i].setText(String.valueOf(dataSnapshot.child("humidity").getValue(Integer.class) - hum_offset));
+
+                        //mTextViewClimatesTemp[i].setText(dataSnapshot.child("temperature").getValue(Integer.class).toString());
+                        //mTextViewClimatesHum[i].setText(dataSnapshot.child("humidity").getValue(Integer.class).toString());
                     }
                 }
             }
